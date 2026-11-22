@@ -1,11 +1,20 @@
 # Odyssey
 
-An endless, scroll-driven journey through 27 original space scenes, all drawn in real time with three.js shaders. There are no images or videos; everything is generated in code.
+One seamless, endless flight through a living universe, built with three.js. There are no cuts and no scenes: everything exists in the same space, and the camera turns to each wonder as you pass it, then carries on.
 
 **Live:** https://forpc1428-eng.github.io/vedant-odyssey/
 
-1. Earth orbit · 2. Ocean of the giant moon · 3. Skimming Saturn's rings · 4. Aurora sea · 5. Comet ride · 6. Gargantua · 7. Crystal nebula · 8. Pulsar lighthouse · 9. Crimson crescent · 10. Red eclipse · 11. Star cannibal · 12. Violet eclipse · 13. Dyson swarm · 14. Diamond rain · 15. Rogue planet · 16. Star nursery · 17. Cat's Eye nebula · 18. Supernova · 19. Ember storm · 20. Blue vortex · 21. Black hole merger · 22. Quasar jet · 23. Cosmic web · 24. Galaxy fall · 25. Wormhole · 26. The edge of time · 27. Big bang, then back to Earth.
+What you fly past:
+- **Black holes** with real light bending: the disk wraps over and under the shadow, and one side glows brighter (gold, red or blue-hot).
+- **Pulsars** with sweeping beams and plasma flowing along magnetic field lines.
+- **Comets** with a rocky nucleus, glowing coma, a blue ion tail and a curved dust tail you ride alongside.
+- **Dyson swarms**: stars wrapped in rings of orbiting mirror panels that glint.
+- **Supernova remnants**: shells of glowing filaments around a newborn pulsar.
+- **Star nurseries**: dust pillars lit by newborn stars inside an emission cloud.
+- **Star cannibals**: a red giant losing a river of plasma to a white dwarf's disk.
+- **Rogue worlds** lit only by their own aurora.
+- **Crystal fields** of glowing shards you fly through.
+- Plus ringed gas giants, rocky and ocean worlds with moons, suns and star clusters, spiral galaxies, nebulae and asteroid fields.
 
-- Scroll or swipe to fly forward or back. Arrow keys and space work too.
-- Tap or click for full screen. On iPhone, use Share → Add to Home Screen.
-- `?scene=5` jumps to a scene; `?low` forces the lightweight mode.
+Controls: scroll or swipe to rush forward or reverse; arrow keys and space work too; move the mouse to look around; tap for full screen.
+URL options: `?low` (lighter mode), `?seed=42` (replay the same universe), `?only=blackhole` (just one kind of object).

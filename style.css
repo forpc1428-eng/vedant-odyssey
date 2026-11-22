@@ -5,8 +5,6 @@ html, body {
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
 #webgl {
   position: fixed;
@@ -20,18 +18,7 @@ html, body {
   position: fixed;
   inset: 0;
   background: #000;
-  display: grid;
-  place-items: center;
   pointer-events: none;
-  transition: opacity 3s ease;
+  transition: opacity 3.5s ease;
 }
 .ready #fade { opacity: 0; }
-.loader {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-top-color: rgba(255, 255, 255, 0.7);
-  animation: spin 1.2s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
