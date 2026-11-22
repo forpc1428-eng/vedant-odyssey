@@ -1,6 +1,8 @@
 # Odyssey
 
-One seamless, endless flight through a living universe, built with three.js. There are no cuts and no scenes: everything exists in the same space, and the camera turns to each wonder as you pass it, then carries on.
+One seamless flight through space. Eight full-detail cinematic clips, each rendered frame by frame from the Odyssey engine, are woven into a live starfield, so the journey never cuts. Scroll to move faster, slower or backwards. Add `?live` for the fully real-time, infinite version.
+
+The real-time engine, built with three.js: There are no cuts and no scenes: everything exists in the same space, and the camera turns to each wonder as you pass it, then carries on.
 
 **Live:** https://forpc1428-eng.github.io/vedant-odyssey/
 

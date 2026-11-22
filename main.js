@@ -16,11 +16,14 @@ import { makeHeroes } from './heroes.js?v=3';
 const params = new URLSearchParams(location.search);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse = matchMedia('(pointer: coarse)').matches;
-const lowTier = params.has('low') || coarse || Math.min(innerWidth, innerHeight) < 600 || (navigator.hardwareConcurrency || 8) <= 4;
+const CAPTURE = params.has('capture');
+const CINEMA = !CAPTURE && !params.has('live') && !params.has('only');
+const lowTier = !CAPTURE && (params.has('low') || coarse || Math.min(innerWidth, innerHeight) < 600 || (navigator.hardwareConcurrency || 8) <= 4);
 
 const Q = lowTier
   ? { pr: Math.min(devicePixelRatio || 1, 1.25), stars: 6000, dust: 1200, galaxy: 22000, nebSprites: 10, asteroids: 140, skyOct: 4, objOct: 5, sphere: 96, bhSteps: 90 }
   : { pr: Math.min(devicePixelRatio || 1, 1.75), stars: 13000, dust: 2500, galaxy: 60000, nebSprites: 18, asteroids: 380, skyOct: 5, objOct: 6, sphere: 160, bhSteps: 150 };
+if (CAPTURE) Object.assign(Q, { pr: devicePixelRatio || 1, stars: 20000, dust: 3000, galaxy: 120000, nebSprites: 26, asteroids: 600, skyOct: 6, objOct: 7, sphere: 256, bhSteps: 280 });
 
 /* ---------- Seeded random ---------- */
 let _s = params.get('seed') ? parseInt(params.get('seed'), 10) : (Math.random() * 2 ** 31) | 0;
@@ -1219,19 +1222,19 @@ function buildAsteroids() {
 /* =====================================================================
    SCHEDULER — keeps the universe going forever
    ===================================================================== */
-const HERO = makeHeroes({
+const HERO = CINEMA ? {} : makeHeroes({
   THREE, NOISE, SKY_GLSL, rnd, range, pick, sideSign, gauss, pathX, pathY,
   makeSunSprite, rockGeometry, Q, lowTier, scene, camera, skyUniforms: skyMat.uniforms,
 });
 const HERO_TYPES = ['blackhole', 'comet', 'dyson', 'pulsar', 'pillars', 'supernova', 'cannibal', 'rogue', 'crystals'];
-const pools = {
+const pools = CINEMA ? {} : {
   planet: [buildPlanetSystem(), buildPlanetSystem(), buildPlanetSystem(), buildPlanetSystem()],
   galaxy: [buildGalaxy(), buildGalaxy()],
   nebula: [buildNebula(), buildNebula(), buildNebula()],
   star: [buildStar(), buildStar()],
   asteroids: [buildAsteroids()],
 };
-HERO_TYPES.forEach((t) => { pools[t] = [HERO[t]()]; });
+if (!CINEMA) HERO_TYPES.forEach((t) => { pools[t] = [HERO[t]()]; });
 Object.values(pools).flat().forEach((o) => (o.group.visible = false));
 
 const ONLY = params.get('only');
@@ -1251,7 +1254,7 @@ let sinceHero = 1;
 const HERO_EVERY = 2;
 function chooseType() {
   if (ONLY) return pools[ONLY] && pools[ONLY].some((o) => !o.active) ? ONLY : null;
-  if (sinceHero >= HERO_EVERY) {
+  if (!CINEMA && sinceHero >= HERO_EVERY) {
     for (let k = 0; k < HERO_TYPES.length; k++) {
       const h = nextHero();
       if (pools[h].some((o) => !o.active)) return h;
@@ -1269,8 +1272,8 @@ function chooseType() {
 const active = [];
 let camZ = 0;
 let nextZ = -320;
-const AHEAD = 2600;
-const BASE_SPEED = reduceMotion ? 6 : 42;
+const AHEAD = CINEMA ? 1800 : 2600;
+const BASE_SPEED = params.has('speed') ? parseFloat(params.get('speed')) : reduceMotion ? 6 : 42;
 const SPACING = { planet: [280, 420], nebula: [300, 460], galaxy: [240, 380], star: [220, 320], asteroids: [440, 560] };
 const HERO_SPACING = [900, 1150];
 
@@ -1291,7 +1294,7 @@ function spawn(type, z) {
 
 // Opening: a ringed giant up close, then the black hole as the first set-piece.
 (function opening() {
-  if (ONLY) { nextZ = -400; return; }
+  if (ONLY || CINEMA) { nextZ = -400; return; }
   const p = pools.planet[0];
   let guard = 0;
   do { p.place(-260); guard++; } while ((p.group.children[2].visible === false) && guard < 30);
@@ -1310,6 +1313,7 @@ function schedule() {
       active.splice(i, 1);
     }
   }
+  if (CINEMA) return;
   let guard = 0;
   while (nextZ > camZ - AHEAD && guard++ < 4) {
     const t = chooseType();
@@ -1423,6 +1427,8 @@ resize();
 /* =====================================================================
    LOOP
    ===================================================================== */
+const cinema = CINEMA ? (await import('./cinema.js?v=1')).makeCinema() : null;
+let cover = 0;
 let time = 0;
 let travel = 0;
 let speed = BASE_SPEED;
@@ -1464,6 +1470,7 @@ function step(dt) {
   camera.rotateZ(-bank);
 
   for (const o of active) o.update(dt, time);
+  if (cinema) cover = cinema.update(dt, speed / BASE_SPEED);
 
   // lights for the rocks follow the nearest light source
   let nearest = null, nd = Infinity;
@@ -1506,7 +1513,7 @@ let frames = 0, acc = 0, adapted = false, prNow = Q.pr;
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
   step(dt);
-  render();
+  if (!(cover > 0.995 && innerHeight > innerWidth)) render();
   if (!adapted) {
     frames++; acc += dt;
     if (frames === 120) {
@@ -1522,8 +1529,14 @@ function frame() {
   requestAnimationFrame(frame);
 }
 try { renderer.compile(scene, camera); } catch (e) { /* ignore */ }
-requestAnimationFrame(() => {
-  frame();
-  setTimeout(() => document.documentElement.classList.add('ready'), 300);
-});
+if (CAPTURE) {
+  document.documentElement.classList.add('ready');
+  const fade = document.getElementById('fade'); if (fade) fade.style.display = 'none';
+  window.__cap = { frame(dt) { step(dt); render(); return true; } };
+} else {
+  requestAnimationFrame(() => {
+    frame();
+    setTimeout(() => document.documentElement.classList.add('ready'), 300);
+  });
+}
 document.addEventListener('visibilitychange', () => { if (!document.hidden) clock.getDelta(); });
